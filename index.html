@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code Operator | Personal Terminal</title>
+  <style>
+    :root {
+      --bg: #05070b;
+      --panel: rgba(10, 18, 28, 0.78);
+      --panel-strong: rgba(14, 28, 43, 0.92);
+      --cyan: #00f5ff;
+      --green: #48ff91;
+      --purple: #b967ff;
+      --text: #d8f7ff;
+      --muted: #7fa4b1;
+      --line: rgba(0, 245, 255, 0.22);
+      --shadow: 0 0 38px rgba(0, 245, 255, 0.16);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(0, 245, 255, 0.14), transparent 28rem),
+        radial-gradient(circle at 82% 6%, rgba(185, 103, 255, 0.16), transparent 22rem),
+        linear-gradient(135deg, #030407 0%, #07111d 52%, #030407 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-image:
+        linear-gradient(rgba(0, 245, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 245, 255, 0.045) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 84%, transparent);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      mix-blend-mode: overlay;
+      opacity: 0.32;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .matrix {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+
+    .matrix span {
+      position: absolute;
+      top: -12vh;
+      color: var(--green);
+      font-size: 14px;
+      text-shadow: 0 0 10px var(--green);
+      animation: rain linear infinite;
+      writing-mode: vertical-rl;
+    }
+
+    @keyframes rain {
+      to {
+        transform: translateY(120vh);
+      }
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 26px 0 64px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 16px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(4, 10, 16, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--cyan);
+      border-radius: 10px;
+      color: var(--cyan);
+      box-shadow: 0 0 18px rgba(0, 245, 255, 0.28), inset 0 0 14px rgba(0, 245, 255, 0.12);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .nav a {
+      padding: 9px 12px;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      transition: 180ms ease;
+    }
+
+    .nav a:hover {
+      color: var(--cyan);
+      border-color: var(--line);
+      background: rgba(0, 245, 255, 0.06);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 28px;
+      align-items: center;
+      min-height: calc(100vh - 110px);
+      padding: 58px 0 38px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 8px 12px;
+      color: var(--green);
+      border: 1px solid rgba(72, 255, 145, 0.28);
+      border-radius: 999px;
+      background: rgba(72, 255, 145, 0.06);
+      box-shadow: 0 0 18px rgba(72, 255, 145, 0.12);
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 14px var(--green);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      50% {
+        opacity: 0.35;
+        transform: scale(1.6);
+      }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(44px, 7vw, 92px);
+      line-height: 0.95;
+      letter-spacing: -0.08em;
+      text-transform: uppercase;
+    }
+
+    .glitch {
+      position: relative;
+      display: inline-block;
+      color: #fff;
+      text-shadow: 0 0 22px rgba(0, 245, 255, 0.45);
+    }
+
+    .glitch::before,
+    .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      opacity: 0.65;
+    }
+
+    .glitch::before {
+      color: var(--cyan);
+      transform: translate(2px, -1px);
+      clip-path: inset(0 0 55% 0);
+    }
+
+    .glitch::after {
+      color: var(--purple);
+      transform: translate(-2px, 1px);
+      clip-path: inset(48% 0 0 0);
+    }
+
+    .hero-copy {
+      max-width: 650px;
+      margin: 24px 0 0;
+      color: #a7cbd7;
+      font-size: 18px;
+      line-height: 1.85;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 34px;
+    }
+
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0, 245, 255, 0.08);
+      color: var(--cyan);
+      font-weight: 800;
+      overflow: hidden;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--cyan);
+      box-shadow: 0 0 24px rgba(0, 245, 255, 0.24);
+    }
+
+    .btn.secondary {
+      color: var(--green);
+      background: rgba(72, 255, 145, 0.07);
+      border-color: rgba(72, 255, 145, 0.24);
+    }
+
+    .terminal {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(180deg, var(--panel-strong), rgba(5, 9, 14, 0.88));
+      box-shadow: var(--shadow), inset 0 0 60px rgba(0, 245, 255, 0.04);
+      overflow: hidden;
+    }
+
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dots i {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--cyan);
+    }
+
+    .dots i:nth-child(1) { background: #ff5f56; }
+    .dots i:nth-child(2) { background: #ffbd2e; }
+    .dots i:nth-child(3) { background: #27c93f; }
+
+    .terminal-title {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .terminal-body {
+      min-height: 382px;
+      padding: 24px;
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .line {
+      color: #bcefff;
+    }
+
+    .prompt {
+      color: var(--green);
+    }
+
+    .cmd {
+      color: var(--cyan);
+    }
+
+    .comment {
+      color: var(--muted);
+    }
+
+    .typing::after {
+      content: "█";
+      color: var(--green);
+      animation: blink 1s steps(2) infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    section {
+      margin-top: 38px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 42px);
+      letter-spacing: -0.04em;
+    }
+
+    .section-head p {
+      max-width: 520px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      position: relative;
+      min-height: 210px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      z-index: -1;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.28), transparent 38%, rgba(185, 103, 255, 0.24));
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 245, 255, 0.5);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 6px 10px;
+      color: var(--green);
+      border: 1px solid rgba(72, 255, 145, 0.2);
+      border-radius: 999px;
+      background: rgba(72, 255, 145, 0.055);
+      font-size: 12px;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .card p {
+      margin: 0;
+      color: #9bbfcb;
+      line-height: 1.75;
+    }
+
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .skills span {
+      padding: 8px 10px;
+      color: var(--cyan);
+      border: 1px dashed rgba(0, 245, 255, 0.28);
+      border-radius: 10px;
+      background: rgba(0, 245, 255, 0.045);
+    }
+
+    .blog-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .post {
+      display: grid;
+      gap: 14px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(7, 14, 22, 0.82);
+      box-shadow: var(--shadow);
+    }
+
+    .post.featured {
+      min-height: 360px;
+      align-content: end;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(5, 7, 11, 0.9) 72%),
+        radial-gradient(circle at 30% 20%, rgba(0, 245, 255, 0.18), transparent 28rem),
+        rgba(7, 14, 22, 0.82);
+    }
+
+    .post-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .post h3 {
+      margin: 0;
+      font-size: clamp(22px, 3vw, 34px);
+      letter-spacing: -0.04em;
+    }
+
+    .post:not(.featured) h3 {
+      font-size: 20px;
+    }
+
+    .post p {
+      margin: 0;
+      color: #a4c7d1;
+      line-height: 1.75;
+    }
+
+    .readmore {
+      width: fit-content;
+      color: var(--cyan);
+      font-weight: 800;
+    }
+
+    .contact {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .signal {
+      display: grid;
+      place-items: center;
+      min-height: 260px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .orb {
+      width: 150px;
+      height: 150px;
+      border: 1px solid var(--cyan);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(72, 255, 145, 0.22), transparent 54%),
+        radial-gradient(circle at 60% 30%, rgba(0, 245, 255, 0.42), transparent 20%);
+      box-shadow: 0 0 50px rgba(0, 245, 255, 0.28), inset 0 0 40px rgba(72, 255, 145, 0.16);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      50% { transform: translateY(-12px) rotate(8deg); }
+    }
+
+    .contact-panel {
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .contact-panel h2 {
+      margin: 0 0 14px;
+      font-size: 34px;
+    }
+
+    .contact-panel p {
+      margin: 0 0 22px;
+      color: #a4c7d1;
+      line-height: 1.8;
+    }
+
+    .links {
+      display: grid;
+      gap: 12px;
+    }
+
+    .links a {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid rgba(0, 245, 255, 0.18);
+      border-radius: 14px;
+      background: rgba(0, 245, 255, 0.045);
+      color: var(--cyan);
+    }
+
+    footer {
+      margin-top: 44px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 860px) {
+      .topbar,
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .hero,
+      .blog-grid,
+      .contact {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 42px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="matrix" aria-hidden="true" id="matrix"></div>
+
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="回到首页">
+        <span class="brand-mark">&gt;_</span>
+        <span>root@profile</span>
+      </a>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#about">About</a>
+        <a href="#stack">Stack</a>
+        <a href="#blog">Blog</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <section class="hero" id="top">
+      <div>
+        <div class="eyebrow"><span class="pulse"></span> ONLINE · BUILDING DIGITAL SYSTEMS</div>
+        <h1><span class="glitch" data-text="CODE">CODE</span><br>OPERATOR</h1>
+        <p class="hero-copy">
+          你好，我是一个沉迷于代码、自动化、网络安全与产品体验的工程师。这里是我的个人终端：记录项目、思考、博客和那些在深夜被调通的 Bug。
+        </p>
+        <div class="actions">
+          <a class="btn" href="#blog">读取博客日志 →</a>
+          <a class="btn secondary" href="#contact">建立连接 ↗</a>
+        </div>
+      </div>
+
+      <div class="terminal" aria-label="个人信息终端">
+        <div class="terminal-head">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <span class="terminal-title">/home/operator/profile.sh</span>
+        </div>
+        <div class="terminal-body">
+          <div class="line"><span class="prompt">visitor@web</span>:<span class="cmd">~$</span> whoami</div>
+          <div class="line">code engineer · security learner · product builder</div>
+          <br>
+          <div class="line"><span class="prompt">visitor@web</span>:<span class="cmd">~$</span> cat mission.txt</div>
+          <div class="line comment"># 用清晰的系统、可靠的代码和一点极客美学解决真实问题。</div>
+          <br>
+          <div class="line"><span class="prompt">visitor@web</span>:<span class="cmd">~$</span> ls focus/</div>
+          <div class="line">frontend-ui&nbsp;&nbsp;backend-api&nbsp;&nbsp;automation&nbsp;&nbsp;security-notes&nbsp;&nbsp;blog</div>
+          <br>
+          <div class="line typing"><span class="prompt">visitor@web</span>:<span class="cmd">~$</span> ./deploy_next_idea</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="section-head">
+        <h2>身份档案</h2>
+        <p>不是传统简历，而是一份运行中的系统状态：能力、偏好、项目经验和长期探索方向。</p>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <span class="tag">PROFILE</span>
+          <h3>工程师思维</h3>
+          <p>喜欢把复杂问题拆解成可验证的模块，用自动化减少重复劳动，用简洁的接口连接系统。</p>
+        </article>
+        <article class="card">
+          <span class="tag">SECURITY</span>
+          <h3>攻防视角</h3>
+          <p>关注 Web 安全、权限边界、日志审计和可靠性，把安全设计前置到开发流程中。</p>
+        </article>
+        <article class="card">
+          <span class="tag">CREATIVE</span>
+          <h3>极客审美</h3>
+          <p>偏爱终端、霓虹、网格、故障艺术与高信息密度界面，让技术表达也有风格。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="section-head">
+        <h2>技术栈</h2>
+        <p>这里可以替换成你的真实技能、项目方向或工具链。</p>
+      </div>
+      <div class="card">
+        <span class="tag">STACK TRACE</span>
+        <h3>常用工具与能力模块</h3>
+        <div class="skills">
+          <span>JavaScript</span>
+          <span>TypeScript</span>
+          <span>HTML/CSS</span>
+          <span>React</span>
+          <span>Node.js</span>
+          <span>Python</span>
+          <span>Linux</span>
+          <span>Docker</span>
+          <span>Security</span>
+          <span>Automation</span>
+          <span>API Design</span>
+          <span>Prompt Engineering</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="blog">
+      <div class="section-head">
+        <h2>博客日志</h2>
+        <p>预留博客区域：可以放技术笔记、项目复盘、漏洞学习记录、工程经验和读书笔记。</p>
+      </div>
+      <div class="blog-grid">
+        <article class="post featured">
+          <div class="meta"><span>FEATURED</span><span>2026-05-12</span><span>8 min read</span></div>
+          <h3>如何搭建一个属于工程师的个人知识终端</h3>
+          <p>从信息架构、视觉语言到部署策略，记录这个个人站点如何变成长期输出系统。</p>
+          <a class="readmore" href="blog-knowledge-terminal.html">read_post()</a>
+        </article>
+        <div class="post-list">
+          <article class="post">
+            <div class="meta"><span>SECURITY</span><span>5 min read</span></div>
+            <h3>一次 Web 登录流程安全检查清单</h3>
+            <p>记录认证、会话、权限和日志四个维度的排查方法。</p>
+            <a class="readmore" href="blog-login-security.html">open_log →</a>
+          </article>
+          <article class="post">
+            <div class="meta"><span>ENGINEERING</span><span>6 min read</span></div>
+            <h3>把重复操作写成脚本之前要想什么</h3>
+            <p>自动化不是炫技，而是稳定性、可复现和可维护性的平衡。</p>
+            <a class="readmore" href="blog-automation-scripts.html">open_log →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="signal"><div class="orb" aria-hidden="true"></div></div>
+      <div class="contact-panel">
+        <h2>建立连接</h2>
+        <p>如果你想交流项目、技术文章、开源协作或安全学习，可以把这里替换成你的邮箱、GitHub、博客订阅或社交链接。</p>
+        <div class="links">
+          <a href="mailto:hello@example.com"><span>Email</span><span>hello@example.com</span></a>
+          <a href="#"><span>GitHub</span><span>@your-handle</span></a>
+          <a href="#"><span>RSS</span><span>/feed.xml</span></a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 Code Operator · built with static HTML · status: online</p>
+    </footer>
+  </main>
+
+  <script>
+    const matrix = document.getElementById('matrix');
+    const glyphs = ['0', '1', '{', '}', '<', '>', '/', '$', '#', 'λ', 'x', 'z'];
+
+    for (let i = 0; i < 54; i += 1) {
+      const stream = document.createElement('span');
+      stream.textContent = Array.from({ length: 18 }, () => glyphs[Math.floor(Math.random() * glyphs.length)]).join('');
+      stream.style.left = `${Math.random() * 100}%`;
+      stream.style.animationDuration = `${8 + Math.random() * 12}s`;
+      stream.style.animationDelay = `${Math.random() * -16}s`;
+      matrix.appendChild(stream);
+    }
+  </script>
+</body>
+</html>

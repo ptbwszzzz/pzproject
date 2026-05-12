@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>如何搭建个人知识终端 | Code Operator</title>
+  <style>
+    :root { --bg:#05070b; --panel:rgba(10,18,28,.82); --cyan:#00f5ff; --green:#48ff91; --purple:#b967ff; --text:#d8f7ff; --muted:#7fa4b1; --line:rgba(0,245,255,.22); --shadow:0 0 38px rgba(0,245,255,.16); font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--text); background:radial-gradient(circle at 18% 18%,rgba(0,245,255,.14),transparent 28rem),radial-gradient(circle at 82% 6%,rgba(185,103,255,.16),transparent 22rem),linear-gradient(135deg,#030407 0%,#07111d 52%,#030407 100%); overflow-x:hidden; }
+    body::before { content:""; position:fixed; inset:0; z-index:-2; background-image:linear-gradient(rgba(0,245,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,.045) 1px,transparent 1px); background-size:42px 42px; mask-image:linear-gradient(to bottom,transparent,#000 12%,#000 84%,transparent); }
+    body::after { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; background:repeating-linear-gradient(to bottom,rgba(255,255,255,.03),rgba(255,255,255,.03) 1px,transparent 1px,transparent 4px); opacity:.32; }
+    a { color:inherit; text-decoration:none; }
+    .matrix { position:fixed; inset:0; z-index:-1; overflow:hidden; opacity:.18; pointer-events:none; }
+    .matrix span { position:absolute; top:-12vh; color:var(--green); font-size:14px; text-shadow:0 0 10px var(--green); animation:rain linear infinite; writing-mode:vertical-rl; }
+    @keyframes rain { to { transform:translateY(120vh); } }
+    .shell { width:min(900px,calc(100% - 32px)); margin:0 auto; padding:26px 0 64px; }
+    .topbar { position:sticky; top:16px; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:18px; padding:14px 18px; border:1px solid var(--line); border-radius:18px; background:rgba(4,10,16,.72); box-shadow:var(--shadow); backdrop-filter:blur(16px); }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .brand-mark { display:grid; place-items:center; width:34px; height:34px; border:1px solid var(--cyan); border-radius:10px; color:var(--cyan); box-shadow:0 0 18px rgba(0,245,255,.28), inset 0 0 14px rgba(0,245,255,.12); }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+    .nav a { padding:9px 12px; color:var(--muted); border:1px solid transparent; border-radius:999px; transition:180ms ease; }
+    .nav a:hover { color:var(--cyan); border-color:var(--line); background:rgba(0,245,255,.06); }
+    .article { margin-top:54px; padding:34px; border:1px solid var(--line); border-radius:26px; background:linear-gradient(180deg,rgba(14,28,43,.92),rgba(5,9,14,.88)); box-shadow:var(--shadow), inset 0 0 60px rgba(0,245,255,.04); }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; color:var(--muted); font-size:13px; }
+    h1 { margin:22px 0 16px; color:#fff; font-size:clamp(34px,6vw,64px); line-height:1.02; letter-spacing:-.07em; text-shadow:0 0 22px rgba(0,245,255,.45); }
+    .lead { color:#a7cbd7; font-size:18px; line-height:1.85; }
+    h2 { margin-top:34px; color:var(--green); font-size:24px; }
+    p, li { color:#a4c7d1; line-height:1.85; }
+    code, pre { color:var(--cyan); }
+    pre { padding:18px; border:1px solid rgba(0,245,255,.18); border-radius:16px; background:rgba(0,245,255,.045); overflow:auto; }
+    .back { display:inline-flex; margin-top:26px; color:var(--cyan); font-weight:800; }
+    footer { margin-top:44px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); text-align:center; }
+    @media (max-width:700px) { .topbar { align-items:flex-start; flex-direction:column; } .article { padding:22px; } }
+  </style>
+</head>
+<body>
+  <div class="matrix" aria-hidden="true" id="matrix"></div>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark">&gt;_</span><span>root@profile</span></a>
+      <nav class="nav" aria-label="页面导航"><a href="index.html#about">About</a><a href="index.html#stack">Stack</a><a href="index.html#blog">Blog</a><a href="index.html#contact">Contact</a></nav>
+    </header>
+    <article class="article">
+      <div class="meta"><span>FEATURED</span><span>2026-05-12</span><span>8 min read</span></div>
+      <h1>如何搭建一个属于工程师的个人知识终端</h1>
+      <p class="lead">一个个人站点不只是展示页面，它也可以是你的知识入口、项目索引、思考缓存和长期输出系统。</p>
+      <h2>01 / 信息架构</h2>
+      <p>先把内容分成三类：个人档案、项目与作品、博客日志。档案用于建立第一印象，项目用于证明能力，博客用于持续沉淀经验。</p>
+      <h2>02 / 视觉语言</h2>
+      <p>工程师风格可以使用终端、网格、霓虹色、命令行提示符和高对比排版，但要注意可读性优先，动效只服务氛围。</p>
+      <pre><code>$ tree profile
+├── about.md
+├── stack.json
+├── projects/
+└── blog/</code></pre>
+      <h2>03 / 长期维护</h2>
+      <p>每篇文章都应该有明确标题、日期、分类和摘要。即使现在只是静态 HTML，也可以逐步演进成 Markdown、RSS 或静态站点生成器。</p>
+      <a class="back" href="index.html#blog">← 返回博客列表</a>
+    </article>
+    <footer><p>© 2026 Code Operator · blog node: knowledge-terminal</p></footer>
+  </main>
+  <script>
+    const matrix=document.getElementById('matrix'); const glyphs=['0','1','{','}','<','>','/','$','#','λ','x','z'];
+    for(let i=0;i<42;i+=1){const s=document.createElement('span');s.textContent=Array.from({length:18},()=>glyphs[Math.floor(Math.random()*glyphs.length)]).join('');s.style.left=`${Math.random()*100}%`;s.style.animationDuration=`${8+Math.random()*12}s`;s.style.animationDelay=`${Math.random()*-16}s`;matrix.appendChild(s);}
+  </script>
+</body>
+</html>
